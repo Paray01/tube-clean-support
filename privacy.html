@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy – TubePlay</title>
+  <meta name="description" content="Privacy policy for TubePlay – the Safari extension that collects no data. Controller, data processing, your rights.">
+  <script>
+    // Language: English by default, German for German-speaking browsers.
+    // Runs before paint, so the correct language is the first thing rendered.
+    (function () {
+      var KEY = 'tubeplay-lang';
+      var META = {
+        en: {
+          title: 'Privacy Policy – TubePlay',
+          description: 'Privacy policy for TubePlay – the Safari extension that collects no data. Controller, data processing, your rights.'
+        },
+        de: {
+          title: 'Datenschutzerklärung – TubePlay',
+          description: 'Datenschutzerklärung für TubePlay – die Safari-Erweiterung, die keine Daten erhebt. Verantwortlicher, Datenverarbeitung, deine Rechte.'
+        }
+      };
+
+      function detect() {
+        try {
+          var param = new URLSearchParams(location.search).get('lang');
+          if (param === 'de' || param === 'en') return param;
+          var stored = localStorage.getItem(KEY);
+          if (stored === 'de' || stored === 'en') return stored;
+          var tags = navigator.languages || [navigator.language || ''];
+          for (var i = 0; i < tags.length; i++) {
+            if (String(tags[i]).toLowerCase().indexOf('de') === 0) return 'de';
+          }
+        } catch (e) {}
+        return 'en';
+      }
+
+      function apply(lang, persist) {
+        if (lang !== 'de') lang = 'en';
+        var root = document.documentElement;
+        root.lang = lang;
+        root.setAttribute('data-lang', lang);
+        document.title = META[lang].title;
+        var desc = document.querySelector('meta[name="description"]');
+        if (desc) desc.setAttribute('content', META[lang].description);
+        if (persist) {
+          try { localStorage.setItem(KEY, lang); } catch (e) {}
+        }
+        var buttons = document.querySelectorAll('[data-lang-btn]');
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].setAttribute('aria-pressed', buttons[i].getAttribute('data-lang-btn') === lang ? 'true' : 'false');
+        }
+      }
+
+      window.setLang = function (lang) { apply(lang, true); };
+      window.syncLang = function () { apply(document.documentElement.getAttribute('data-lang'), false); };
+
+      apply(detect(), false);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0C0C0E;
+      --bg-card: #161619;
+      --bg-card-hover: #1C1C20;
+      --accent: #5EDBC8;
+      --accent-glow: rgba(94, 219, 200, 0.14);
+      --accent-soft: #A6EEE3;
+      --text-primary: #EEF2F1;
+      --text-secondary: #8B9290;
+      --text-muted: #5A615F;
+      --border: rgba(255, 255, 255, 0.06);
+      --radius: 20px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Language: English is the default, German is revealed by [data-lang="de"].
+       Without JavaScript the page stays English. */
+    [data-l="de"] {
+      display: none;
+    }
+
+    html[data-lang="de"] [data-l="de"] {
+      display: revert;
+    }
+
+    html[data-lang="de"] [data-l="en"] {
+      display: none;
+    }
+
+    /* Ambient background glow */
+    .ambient {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: pulse 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+      100% { opacity: 0.8; transform: translateX(-50%) scale(1.1); }
+    }
+
+    /* Grain overlay */
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 128px;
+    }
+
+    /* Language switch */
+    .lang-switch {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 20;
+      display: flex;
+      gap: 2px;
+      padding: 3px;
+      background: rgba(22, 22, 25, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+
+    .lang-switch button {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      padding: 7px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+
+    .lang-switch button:hover {
+      color: var(--text-primary);
+    }
+
+    .lang-switch button:focus-visible {
+      outline: 2px solid var(--accent-soft);
+      outline-offset: 2px;
+    }
+
+    html:not([data-lang]) .lang-switch [data-lang-btn="en"],
+    html[data-lang="en"] .lang-switch [data-lang-btn="en"],
+    html[data-lang="de"] .lang-switch [data-lang-btn="de"] {
+      background: var(--accent);
+      color: #0C0C0E;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 80px 24px 120px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 72px;
+      animation: fadeUp 0.8s ease-out both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .app-icon {
+      width: 88px;
+      height: 88px;
+      border-radius: 20px;
+      margin: 0 auto 28px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(94, 219, 200, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .app-icon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 2.4rem;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    .header h1 span.brand {
+      color: var(--accent);
+    }
+
+    .header p {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    /* Divider */
+    .divider {
+      width: 48px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      margin: 0 auto 72px;
+      border-radius: 1px;
+      animation: fadeUp 0.8s ease-out 0.15s both;
+    }
+
+    /* Contact Card */
+    .contact-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      text-align: center;
+      transition: background 0.3s ease, border-color 0.3s ease;
+      animation: fadeUp 0.8s ease-out 0.3s both;
+    }
+
+    .contact-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .contact-card .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .contact-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .contact-card .description {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      line-height: 1.7;
+      margin-bottom: 32px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .email-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      background: var(--accent);
+      color: #0C0C0E;
+      text-decoration: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 16px rgba(94, 219, 200, 0.28), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+
+    .email-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(94, 219, 200, 0.38), inset 0 1px 0 rgba(255,255,255,0.15);
+      background: #7CE5D5;
+    }
+
+    .email-btn:active {
+      transform: translateY(0);
+    }
+
+    .email-btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+      margin-top: 56px;
+      animation: fadeUp 0.8s ease-out 0.45s both;
+    }
+
+    .faq-section .section-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .faq-item:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .faq-question span.q {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .faq-question .chevron {
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .faq-item.open .chevron {
+      transform: rotate(180deg);
+      color: var(--accent);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding-top 0.35s ease;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 340px;
+      padding-top: 16px;
+    }
+
+    .faq-answer p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+      animation: fadeUp 0.8s ease-out 0.6s both;
+    }
+
+    .footer p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    .footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer a:hover {
+      color: var(--accent-soft);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container {
+        padding: 72px 20px 80px;
+      }
+
+      .header h1 {
+        font-size: 1.85rem;
+      }
+
+      .contact-card {
+        padding: 36px 24px;
+      }
+
+      .faq-item {
+        padding: 20px 22px;
+      }
+
+      .lang-switch {
+        top: 14px;
+        right: 14px;
+      }
+
+      .lang-switch button {
+        padding: 6px 12px;
+      }
+    }
+
+    /* Legal text */
+    .legal {
+      animation: fadeUp 0.8s ease-out 0.3s both;
+    }
+
+    .legal .meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 40px;
+      letter-spacing: 0.04em;
+    }
+
+    .legal section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 30px;
+      margin-bottom: 12px;
+    }
+
+    .legal section.summary {
+      border-color: rgba(94, 219, 200, 0.35);
+      background: rgba(94, 219, 200, 0.06);
+    }
+
+    .legal h2 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: 1.15rem;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .legal h2 .num {
+      color: var(--accent);
+      margin-right: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.85rem;
+      vertical-align: middle;
+    }
+
+    .legal p, .legal li {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      line-height: 1.75;
+    }
+
+    .legal p + p, .legal ul + p, .legal p + ul {
+      margin-top: 10px;
+    }
+
+    .legal ul {
+      padding-left: 20px;
+    }
+
+    .legal li + li {
+      margin-top: 4px;
+    }
+
+    .legal strong {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .legal a {
+      color: var(--accent-soft);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(166, 238, 227, 0.3);
+      transition: border-color 0.2s ease;
+      word-break: break-word;
+    }
+
+    .legal a:hover {
+      border-color: var(--accent-soft);
+    }
+
+    .legal address {
+      font-style: normal;
+      color: var(--text-primary);
+      font-size: 0.92rem;
+      line-height: 1.75;
+      font-weight: 400;
+      margin: 10px 0;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .back:hover {
+      color: var(--accent-soft);
+    }
+
+    @media (max-width: 600px) {
+      .legal section {
+        padding: 22px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient"></div>
+  <div class="grain"></div>
+
+  <div class="lang-switch" role="group" aria-label="Language / Sprache">
+    <button type="button" data-lang-btn="en" aria-pressed="true" onclick="setLang('en')">EN</button>
+    <button type="button" data-lang-btn="de" aria-pressed="false" onclick="setLang('de')">DE</button>
+  </div>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header">
+      <a class="back" href="./"><span data-l="en">← TubePlay Support</span><span data-l="de">← TubePlay Support</span></a>
+      <div class="app-icon">
+        <img src="icon.png" width="88" height="88" alt="TubePlay app icon">
+      </div>
+      <h1><span class="brand">TubePlay</span> <span data-l="en">Privacy Policy</span><span data-l="de">Datenschutz</span></h1>
+      <p>
+        <span data-l="en">How TubePlay handles your data: it doesn't collect any. Here is the full explanation, as required by law.</span>
+        <span data-l="de">Wie TubePlay mit deinen Daten umgeht: Es erhebt keine. Hier die vollständige Erklärung, wie das Gesetz sie verlangt.</span>
+      </p>
+    </header>
+
+    <div class="divider"></div>
+
+    <main class="legal">
+      <p class="meta">
+        <span data-l="en">Last updated: 2 September 2026 · Applies to the iOS app and Safari extension TubePlay, version 1.0 and later</span>
+        <span data-l="de">Stand: 2. September 2026 · Gilt für die iOS-App und Safari-Erweiterung TubePlay ab Version 1.0</span>
+      </p>
+
+      <section>
+        <h2><span class="num">1</span><span data-l="en">Controller</span><span data-l="de">Verantwortlicher</span></h2>
+        <div data-l="en">
+<p>The controller within the meaning of the General Data Protection Regulation (GDPR) for the iOS app and Safari extension “TubePlay” (hereinafter “the app”) and for this website is:</p>
+<address>Nikolas Sarafski<br>Dunantstraße 12<br>96049 Bamberg<br>Germany<br>Email: <a href="mailto:sarafski.nikolas@gmail.com">sarafski.nikolas@gmail.com</a></address>
+        </div>
+        <div data-l="de">
+<p>Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) für die iOS-App und Safari-Erweiterung „TubePlay“ (nachfolgend „App“) sowie für diese Website ist:</p>
+<address>Nikolas Sarafski<br>Dunantstraße 12<br>96049 Bamberg<br>Deutschland<br>E-Mail: <a href="mailto:sarafski.nikolas@gmail.com">sarafski.nikolas@gmail.com</a></address>
+        </div>
+      </section>
+
+      <section class="summary">
+        <h2><span class="num">2</span><span data-l="en">The short version</span><span data-l="de">Kurzfassung</span></h2>
+        <div data-l="en">
+<p><strong>TubePlay does not collect, store or transmit any personal data.</strong> There are no servers, no user accounts, no analytics, no tracking and no advertising. The app works entirely on your device. The developer never receives any data about you or about what you watch.</p>
+        </div>
+        <div data-l="de">
+<p><strong>TubePlay erhebt, speichert und übermittelt keine personenbezogenen Daten.</strong> Es gibt keine Server, keine Nutzerkonten, keine Analyse, kein Tracking und keine Werbung. Die App arbeitet vollständig auf deinem Gerät. Der Entwickler erhält zu keinem Zeitpunkt Daten über dich oder darüber, was du ansiehst.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">3</span><span data-l="en">What the app does technically</span><span data-l="de">Was die App technisch tut</span></h2>
+        <div data-l="en">
+<p>TubePlay consists of a small container app and a Safari web extension. The extension runs a script on pages of <strong>youtube.com</strong> only. That script changes how the page behaves on your device: it prevents YouTube from forcing a video out of Picture-in-Picture and from pausing it when the page goes to the background. It does not read, record or analyse the content of the page, your account, your watch history or anything you type.</p>
+<ul>
+<li><strong>No network connections.</strong> The app and the extension do not contact any server, neither the developer's nor a third party's.</li>
+<li><strong>No storage.</strong> Nothing is written to your device beyond the app itself. The extension uses no cookies, no local storage and no databases.</li>
+<li><strong>One permission: “active tab”.</strong> The extension's popup uses it solely to check whether the tab currently in front is a YouTube page, so it can show “active” or “inactive”. The address is evaluated on the device and immediately discarded.</li>
+<li><strong>Container app.</strong> The app itself only shows setup instructions. It has no functions of its own and no internet access.</li>
+</ul>
+        </div>
+        <div data-l="de">
+<p>TubePlay besteht aus einer kleinen Container-App und einer Safari-Web-Erweiterung. Die Erweiterung führt ausschließlich auf Seiten von <strong>youtube.com</strong> ein Script aus. Dieses Script verändert das Verhalten der Seite auf deinem Gerät: Es verhindert, dass YouTube ein Video aus dem Bild-in-Bild-Fenster zwingt und es pausiert, sobald die Seite in den Hintergrund geht. Es liest, protokolliert oder analysiert weder den Inhalt der Seite noch dein Konto, deinen Wiedergabeverlauf oder deine Eingaben.</p>
+<ul>
+<li><strong>Keine Netzwerkverbindungen.</strong> App und Erweiterung kontaktieren keinen Server, weder des Entwicklers noch eines Dritten.</li>
+<li><strong>Keine Speicherung.</strong> Außer der App selbst wird nichts auf deinem Gerät abgelegt. Die Erweiterung nutzt keine Cookies, keinen lokalen Speicher und keine Datenbanken.</li>
+<li><strong>Eine Berechtigung: „Aktiver Tab“.</strong> Das Popup der Erweiterung nutzt sie nur, um zu prüfen, ob der vorderste Tab eine YouTube-Seite ist, damit es „aktiv“ oder „inaktiv“ anzeigen kann. Die Adresse wird auf dem Gerät ausgewertet und sofort verworfen.</li>
+<li><strong>Container-App.</strong> Die App selbst zeigt nur eine Einrichtungsanleitung. Sie hat keine eigenen Funktionen und keinen Internetzugriff.</li>
+</ul>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">4</span><span data-l="en">No data collection by the developer</span><span data-l="de">Keine Datenerhebung durch den Entwickler</span></h2>
+        <div data-l="en">
+<p>The developer does not process any personal data in connection with the app. There is no analytics software, no crash-reporting service from third parties, no advertising identifiers and no tracking of any kind. Accordingly, the app's privacy details in the App Store state “Data Not Collected”.</p>
+        </div>
+        <div data-l="de">
+<p>Der Entwickler verarbeitet im Zusammenhang mit der App keinerlei personenbezogene Daten. Es gibt keine Analyse-Software, keinen Absturzbericht-Dienst von Dritten, keine Werbe-Identifikatoren und kein Tracking irgendeiner Art. Entsprechend lautet die Datenschutz-Angabe der App im App Store „Keine Daten erfasst“.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">5</span><span data-l="en">YouTube and Google</span><span data-l="de">YouTube und Google</span></h2>
+        <div data-l="en">
+<p>TubePlay works on pages that belong to YouTube (Google). When you use YouTube in Safari, YouTube processes data such as your IP address, your account and your viewing activity according to Google's privacy policy. This happens with or without TubePlay. TubePlay neither adds to nor changes what YouTube receives, and it does not send anything to Google on its own.</p>
+<p>Google's privacy policy: <a href="https://policies.google.com/privacy" rel="noopener">https://policies.google.com/privacy</a></p>
+        </div>
+        <div data-l="de">
+<p>TubePlay wirkt auf Seiten, die YouTube (Google) gehören. Wenn du YouTube in Safari nutzt, verarbeitet YouTube Daten wie deine IP-Adresse, dein Konto und deine Wiedergabeaktivität nach der Datenschutzerklärung von Google. Das geschieht mit und ohne TubePlay. TubePlay ergänzt oder verändert nicht, was YouTube erhält, und sendet von sich aus nichts an Google.</p>
+<p>Datenschutzerklärung von Google: <a href="https://policies.google.com/privacy" rel="noopener">https://policies.google.com/privacy</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">6</span><span data-l="en">Apple App Store</span><span data-l="de">Apple App Store</span></h2>
+        <div data-l="en">
+<p>The app is distributed through Apple's App Store. Downloading and, where applicable, paying for the app is handled by Apple. The developer receives no personal data from this, in particular no name, address, payment details or Apple ID.</p>
+<p>If you have allowed “Share with App Developers” under Settings, Privacy &amp; Security, Analytics &amp; Improvements, Apple may pass on anonymised crash reports and aggregated usage statistics to the developer. These contain no information that identifies you. You can turn this off at any time in the same place.</p>
+<p>Apple's privacy policy: <a href="https://www.apple.com/legal/privacy/" rel="noopener">https://www.apple.com/legal/privacy/</a></p>
+        </div>
+        <div data-l="de">
+<p>Die App wird über den App Store von Apple vertrieben. Download und gegebenenfalls Bezahlung wickelt Apple ab. Der Entwickler erhält daraus keine personenbezogenen Daten, insbesondere keinen Namen, keine Adresse, keine Zahlungsdaten und keine Apple-ID.</p>
+<p>Hast du unter Einstellungen, Datenschutz &amp; Sicherheit, Analyse &amp; Verbesserungen die Option „Mit App-Entwicklern teilen“ erlaubt, kann Apple anonymisierte Absturzberichte und aggregierte Nutzungsstatistiken an den Entwickler weitergeben. Diese enthalten keine Angaben, die dich identifizieren. Du kannst das dort jederzeit abschalten.</p>
+<p>Datenschutzerklärung von Apple: <a href="https://www.apple.com/legal/privacy/" rel="noopener">https://www.apple.com/legal/privacy/</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">7</span><span data-l="en">This website</span><span data-l="de">Diese Website</span></h2>
+        <div data-l="en">
+<p>The support page and this privacy policy are hosted on <strong>GitHub Pages</strong> (GitHub Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA). When you open the page, your browser transmits technical data to GitHub, in particular your IP address, the time of access, the page requested and your browser type. GitHub processes this data in server logs to deliver the page and to keep the service secure. GitHub's privacy statement: <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">docs.github.com/site-policy/privacy-policies/github-general-privacy-statement</a></p>
+<p>The page loads its fonts from <strong>Google Fonts</strong> (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland). To do so your browser connects to Google's servers and transmits your IP address. Google's privacy policy: <a href="https://policies.google.com/privacy" rel="noopener">policies.google.com/privacy</a></p>
+<p>The page remembers your language choice (EN/DE) in your browser's local storage. This value stays on your device, is not transmitted anywhere and is not a cookie. The page sets no cookies and uses no analytics.</p>
+<p>The legal basis for this processing is Art. 6(1)(f) GDPR, the legitimate interest in providing a functional and secure support page. Where data is transferred to the USA, this takes place on the basis of the EU–US Data Privacy Framework or the EU standard contractual clauses used by the respective provider.</p>
+        </div>
+        <div data-l="de">
+<p>Die Support-Seite und diese Datenschutzerklärung werden auf <strong>GitHub Pages</strong> gehostet (GitHub Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA). Beim Aufruf übermittelt dein Browser technische Daten an GitHub, insbesondere deine IP-Adresse, den Zeitpunkt des Zugriffs, die aufgerufene Seite und deinen Browsertyp. GitHub verarbeitet diese Daten in Server-Logs, um die Seite auszuliefern und den Dienst abzusichern. Datenschutzerklärung von GitHub: <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">docs.github.com/site-policy/privacy-policies/github-general-privacy-statement</a></p>
+<p>Die Seite lädt ihre Schriften von <strong>Google Fonts</strong> (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland). Dazu verbindet sich dein Browser mit Servern von Google und übermittelt deine IP-Adresse. Datenschutzerklärung von Google: <a href="https://policies.google.com/privacy" rel="noopener">policies.google.com/privacy</a></p>
+<p>Die Seite merkt sich deine Sprachwahl (EN/DE) im lokalen Speicher deines Browsers. Dieser Wert bleibt auf deinem Gerät, wird nirgendwohin übermittelt und ist kein Cookie. Die Seite setzt keine Cookies und nutzt keine Analyse-Dienste.</p>
+<p>Rechtsgrundlage dieser Verarbeitung ist Art. 6 Abs. 1 lit. f DSGVO, das berechtigte Interesse an einer funktionsfähigen und sicheren Support-Seite. Soweit Daten in die USA übertragen werden, geschieht dies auf Grundlage des EU-US Data Privacy Framework beziehungsweise der vom jeweiligen Anbieter verwendeten EU-Standardvertragsklauseln.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">8</span><span data-l="en">Contact by email</span><span data-l="de">Kontakt per E-Mail</span></h2>
+        <div data-l="en">
+<p>If you contact the developer by email, your email address and the content of your message are processed to answer your request (Art. 6(1)(b) and (f) GDPR). Messages are deleted once the request is settled and no statutory retention period applies.</p>
+        </div>
+        <div data-l="de">
+<p>Wenn du den Entwickler per E-Mail kontaktierst, werden deine E-Mail-Adresse und der Inhalt deiner Nachricht verarbeitet, um deine Anfrage zu beantworten (Art. 6 Abs. 1 lit. b und f DSGVO). Nachrichten werden gelöscht, sobald die Anfrage erledigt ist und keine gesetzliche Aufbewahrungspflicht besteht.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">9</span><span data-l="en">Your rights</span><span data-l="de">Deine Rechte</span></h2>
+        <div data-l="en">
+<p>Under the GDPR you have the right to access (Art. 15), rectification (Art. 16), erasure (Art. 17), restriction of processing (Art. 18), data portability (Art. 20) and objection (Art. 21), as well as the right to lodge a complaint with a supervisory authority (Art. 77). The supervisory authority responsible for the developer is the Bayerisches Landesamt für Datenschutzaufsicht (BayLDA), Promenade 18, 91522 Ansbach, Germany.</p>
+<p>Because the developer stores no personal data about you, there is usually nothing to disclose, correct or delete. Everything the app holds is removed by deleting the app from your device.</p>
+        </div>
+        <div data-l="de">
+<p>Nach der DSGVO hast du das Recht auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21) sowie das Recht auf Beschwerde bei einer Aufsichtsbehörde (Art. 77). Die für den Entwickler zuständige Aufsichtsbehörde ist das Bayerische Landesamt für Datenschutzaufsicht (BayLDA), Promenade 18, 91522 Ansbach.</p>
+<p>Da der Entwickler keine personenbezogenen Daten über dich speichert, gibt es in der Regel nichts, worüber Auskunft zu erteilen oder was zu berichtigen oder zu löschen wäre. Alles, was die App enthält, entfernst du durch Löschen der App von deinem Gerät.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">10</span><span data-l="en">Children</span><span data-l="de">Kinder</span></h2>
+        <div data-l="en">
+<p>The app is not directed at children and, as described above, collects no data from any user regardless of age.</p>
+        </div>
+        <div data-l="de">
+<p>Die App richtet sich nicht an Kinder und erhebt, wie oben beschrieben, von keinem Nutzer Daten, unabhängig vom Alter.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">11</span><span data-l="en">Changes to this policy</span><span data-l="de">Änderungen dieser Erklärung</span></h2>
+        <div data-l="en">
+<p>This privacy policy may be updated if the app or the legal situation changes. The current version is always available at this address. The date of the last update is shown at the top of the page.</p>
+        </div>
+        <div data-l="de">
+<p>Diese Datenschutzerklärung kann angepasst werden, wenn sich die App oder die Rechtslage ändert. Die aktuelle Fassung ist jederzeit unter dieser Adresse abrufbar. Der Stand der letzten Änderung steht oben auf der Seite.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>&copy; 2026 TubePlay &middot; <a href="./"><span data-l="en">Support</span><span data-l="de">Support</span></a> &middot; <a href="mailto:sarafski.nikolas@gmail.com">sarafski.nikolas@gmail.com</a></p>
+    </footer>
+
+  </div>
+
+  <script>syncLang();</script>
+
+</body>
+</html>

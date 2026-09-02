@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support – TubePlay</title>
+  <meta name="description" content="Support for TubePlay – the Safari extension that keeps YouTube in Picture-in-Picture and playing in the background. FAQ and contact.">
+  <script>
+    // Language: English by default, German for German-speaking browsers.
+    // Runs before paint, so the correct language is the first thing rendered.
+    (function () {
+      var KEY = 'tubeplay-lang';
+      var META = {
+        en: {
+          title: 'Support – TubePlay',
+          description: 'Support for TubePlay – the Safari extension that keeps YouTube in Picture-in-Picture and playing in the background. FAQ and contact.'
+        },
+        de: {
+          title: 'Support – TubePlay',
+          description: 'Support für TubePlay – die Safari-Erweiterung, die YouTube im Bild-in-Bild-Fenster hält und im Hintergrund weiterlaufen lässt. FAQ und Kontakt.'
+        }
+      };
+
+      function detect() {
+        try {
+          var param = new URLSearchParams(location.search).get('lang');
+          if (param === 'de' || param === 'en') return param;
+          var stored = localStorage.getItem(KEY);
+          if (stored === 'de' || stored === 'en') return stored;
+          var tags = navigator.languages || [navigator.language || ''];
+          for (var i = 0; i < tags.length; i++) {
+            if (String(tags[i]).toLowerCase().indexOf('de') === 0) return 'de';
+          }
+        } catch (e) {}
+        return 'en';
+      }
+
+      function apply(lang, persist) {
+        if (lang !== 'de') lang = 'en';
+        var root = document.documentElement;
+        root.lang = lang;
+        root.setAttribute('data-lang', lang);
+        document.title = META[lang].title;
+        var desc = document.querySelector('meta[name="description"]');
+        if (desc) desc.setAttribute('content', META[lang].description);
+        if (persist) {
+          try { localStorage.setItem(KEY, lang); } catch (e) {}
+        }
+        var buttons = document.querySelectorAll('[data-lang-btn]');
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].setAttribute('aria-pressed', buttons[i].getAttribute('data-lang-btn') === lang ? 'true' : 'false');
+        }
+      }
+
+      window.setLang = function (lang) { apply(lang, true); };
+      window.syncLang = function () { apply(document.documentElement.getAttribute('data-lang'), false); };
+
+      apply(detect(), false);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0C0C0E;
+      --bg-card: #161619;
+      --bg-card-hover: #1C1C20;
+      --accent: #5EDBC8;
+      --accent-glow: rgba(94, 219, 200, 0.14);
+      --accent-soft: #A6EEE3;
+      --text-primary: #EEF2F1;
+      --text-secondary: #8B9290;
+      --text-muted: #5A615F;
+      --border: rgba(255, 255, 255, 0.06);
+      --radius: 20px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Language: English is the default, German is revealed by [data-lang="de"].
+       Without JavaScript the page stays English. */
+    [data-l="de"] {
+      display: none;
+    }
+
+    html[data-lang="de"] [data-l="de"] {
+      display: revert;
+    }
+
+    html[data-lang="de"] [data-l="en"] {
+      display: none;
+    }
+
+    /* Ambient background glow */
+    .ambient {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: pulse 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+      100% { opacity: 0.8; transform: translateX(-50%) scale(1.1); }
+    }
+
+    /* Grain overlay */
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 128px;
+    }
+
+    /* Language switch */
+    .lang-switch {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 20;
+      display: flex;
+      gap: 2px;
+      padding: 3px;
+      background: rgba(22, 22, 25, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+
+    .lang-switch button {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      padding: 7px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+
+    .lang-switch button:hover {
+      color: var(--text-primary);
+    }
+
+    .lang-switch button:focus-visible {
+      outline: 2px solid var(--accent-soft);
+      outline-offset: 2px;
+    }
+
+    html:not([data-lang]) .lang-switch [data-lang-btn="en"],
+    html[data-lang="en"] .lang-switch [data-lang-btn="en"],
+    html[data-lang="de"] .lang-switch [data-lang-btn="de"] {
+      background: var(--accent);
+      color: #0C0C0E;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 80px 24px 120px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 72px;
+      animation: fadeUp 0.8s ease-out both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .app-icon {
+      width: 88px;
+      height: 88px;
+      border-radius: 20px;
+      margin: 0 auto 28px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(94, 219, 200, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .app-icon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 2.4rem;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    .header h1 span.brand {
+      color: var(--accent);
+    }
+
+    .header p {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    /* Divider */
+    .divider {
+      width: 48px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      margin: 0 auto 72px;
+      border-radius: 1px;
+      animation: fadeUp 0.8s ease-out 0.15s both;
+    }
+
+    /* Contact Card */
+    .contact-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      text-align: center;
+      transition: background 0.3s ease, border-color 0.3s ease;
+      animation: fadeUp 0.8s ease-out 0.3s both;
+    }
+
+    .contact-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .contact-card .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .contact-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .contact-card .description {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      line-height: 1.7;
+      margin-bottom: 32px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .email-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      background: var(--accent);
+      color: #0C0C0E;
+      text-decoration: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 16px rgba(94, 219, 200, 0.28), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+
+    .email-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(94, 219, 200, 0.38), inset 0 1px 0 rgba(255,255,255,0.15);
+      background: #7CE5D5;
+    }
+
+    .email-btn:active {
+      transform: translateY(0);
+    }
+
+    .email-btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+      margin-top: 56px;
+      animation: fadeUp 0.8s ease-out 0.45s both;
+    }
+
+    .faq-section .section-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .faq-item:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .faq-question span.q {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .faq-question .chevron {
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .faq-item.open .chevron {
+      transform: rotate(180deg);
+      color: var(--accent);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding-top 0.35s ease;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 340px;
+      padding-top: 16px;
+    }
+
+    .faq-answer p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+      animation: fadeUp 0.8s ease-out 0.6s both;
+    }
+
+    .footer p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    .footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer a:hover {
+      color: var(--accent-soft);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container {
+        padding: 72px 20px 80px;
+      }
+
+      .header h1 {
+        font-size: 1.85rem;
+      }
+
+      .contact-card {
+        padding: 36px 24px;
+      }
+
+      .faq-item {
+        padding: 20px 22px;
+      }
+
+      .lang-switch {
+        top: 14px;
+        right: 14px;
+      }
+
+      .lang-switch button {
+        padding: 6px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient"></div>
+  <div class="grain"></div>
+
+  <div class="lang-switch" role="group" aria-label="Language / Sprache">
+    <button type="button" data-lang-btn="en" aria-pressed="true" onclick="setLang('en')">EN</button>
+    <button type="button" data-lang-btn="de" aria-pressed="false" onclick="setLang('de')">DE</button>
+  </div>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="app-icon">
+        <img src="icon.png" width="88" height="88" alt="TubePlay app icon">
+      </div>
+      <h1><span class="brand">TubePlay</span> Support</h1>
+      <p>
+        <span data-l="en">Keeps YouTube in Picture-in-Picture and playing in the background, even when you switch apps. If you have questions or run into trouble, we are here for you.</span>
+        <span data-l="de">Hält YouTube im Bild-in-Bild-Fenster und lässt es im Hintergrund weiterlaufen, auch beim App-Wechsel. Bei Fragen oder Problemen sind wir für dich da.</span>
+      </p>
+    </header>
+
+    <div class="divider"></div>
+
+    <!-- Contact Card -->
+    <div class="contact-card">
+      <div class="label">
+        <span data-l="en">Contact</span>
+        <span data-l="de">Kontakt</span>
+      </div>
+      <h2>
+        <span data-l="en">How can we help?</span>
+        <span data-l="de">Wie können wir helfen?</span>
+      </h2>
+      <p class="description">
+        <span data-l="en">Send us an email and we will get back to you as soon as possible.</span>
+        <span data-l="de">Schreib uns eine E-Mail und wir melden uns so schnell wie möglich bei dir zurück.</span>
+      </p>
+      <a href="mailto:sarafski.nikolas@gmail.com" class="email-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="M22 4L12 13L2 4"/>
+        </svg>
+        <span data-l="en">Send email</span>
+        <span data-l="de">E-Mail senden</span>
+      </a>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq-section">
+      <div class="section-label">
+        <span data-l="en">Frequently asked questions</span>
+        <span data-l="de">Häufige Fragen</span>
+      </div>
+
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-question">
+          <span class="q">
+            <span data-l="en">How do I turn TubePlay on in Safari?</span>
+            <span data-l="de">Wie schalte ich TubePlay in Safari ein?</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p data-l="en">Open Settings, go to Apps, then Safari, then Extensions, and turn on TubePlay. Allow it for youtube.com, ideally with “Always allow”. On older iOS versions the path is Settings, Safari, Extensions. You can also tap the page menu in Safari's address bar and choose “Manage Extensions”.</p>
+          <p data-l="de">Öffne Einstellungen, dann Apps, Safari, Erweiterungen, und schalte TubePlay ein. Erlaube die Erweiterung für youtube.com, am besten mit „Immer erlauben“. Auf älteren iOS-Versionen lautet der Weg Einstellungen, Safari, Erweiterungen. Alternativ tippst du in Safari auf das Seitenmenü in der Adressleiste und wählst „Erweiterungen verwalten“.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-question">
+          <span class="q">
+            <span data-l="en">How do I start Picture-in-Picture?</span>
+            <span data-l="de">Wie starte ich Bild-in-Bild?</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p data-l="en">Open youtube.com in Safari and play a video. Switch to full screen and tap the Picture-in-Picture button in the top corner of the player, or simply swipe up to the Home Screen while the video is playing. The floating window stays open and keeps playing while you use other apps.</p>
+          <p data-l="de">Öffne youtube.com in Safari und starte ein Video. Wechsle in den Vollbildmodus und tippe oben im Player auf das Bild-in-Bild-Symbol, oder wische während der Wiedergabe einfach nach oben zum Home-Bildschirm. Das schwebende Fenster bleibt offen und läuft weiter, während du andere Apps nutzt.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-question">
+          <span class="q">
+            <span data-l="en">The video still stops or the window closes</span>
+            <span data-l="de">Das Video stoppt trotzdem oder das Fenster schließt sich</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p data-l="en">Check that TubePlay is turned on and allowed for youtube.com, then reload the page. Make sure you are watching on youtube.com in Safari, not in the YouTube app or another browser. If Safari only granted access for one day, grant it again with “Always allow”.</p>
+          <p data-l="de">Prüfe, ob TubePlay eingeschaltet und für youtube.com erlaubt ist, und lade die Seite neu. Achte darauf, dass du auf youtube.com in Safari schaust, nicht in der YouTube-App oder einem anderen Browser. Hat Safari den Zugriff nur für einen Tag erteilt, erlaube ihn erneut mit „Immer erlauben“.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-question">
+          <span class="q">
+            <span data-l="en">Does TubePlay work in the YouTube app?</span>
+            <span data-l="de">Funktioniert TubePlay in der YouTube-App?</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p data-l="en">No. TubePlay is a Safari extension and only works on youtube.com pages opened in Safari. It has no effect on the YouTube app or on other browsers.</p>
+          <p data-l="de">Nein. TubePlay ist eine Safari-Erweiterung und wirkt nur auf youtube.com-Seiten, die in Safari geöffnet sind. Auf die YouTube-App oder andere Browser hat sie keinen Einfluss.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-question">
+          <span class="q">
+            <span data-l="en">Does TubePlay change YouTube or block anything?</span>
+            <span data-l="de">Verändert TubePlay YouTube oder blockiert es etwas?</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p data-l="en">No. The player stays untouched and nothing is blocked or hidden. TubePlay only stops YouTube from forcing the video out of Picture-in-Picture and from pausing it when the page goes to the background. The pause button on the page and in the floating window keep working as usual.</p>
+          <p data-l="de">Nein. Der Player bleibt unverändert, nichts wird blockiert oder ausgeblendet. TubePlay verhindert nur, dass YouTube das Video aus dem Bild-in-Bild-Fenster zwingt und es pausiert, sobald die Seite in den Hintergrund geht. Die Pause-Taste auf der Seite und im schwebenden Fenster funktionieren weiterhin.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-question">
+          <span class="q">
+            <span data-l="en">What data does TubePlay collect?</span>
+            <span data-l="de">Welche Daten sammelt TubePlay?</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p data-l="en">None. TubePlay runs entirely on your device, has no servers, no accounts and no tracking. Its only permission is access to the active tab, which is used to show in the popup whether the current page is YouTube.</p>
+          <p data-l="de">Keine. TubePlay läuft vollständig auf deinem Gerät, hat keine Server, keine Konten und kein Tracking. Die einzige Berechtigung ist der Zugriff auf den aktiven Tab, damit das Popup anzeigen kann, ob die aktuelle Seite YouTube ist.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-question">
+          <span class="q">
+            <span data-l="en">The popup says “Inactive — open YouTube”</span>
+            <span data-l="de">Das Popup zeigt „Inaktiv — öffne YouTube“</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p data-l="en">That is expected on any page that is not YouTube. The popup only reports whether TubePlay applies to the current tab. There is nothing to configure: open a YouTube page and the status switches to active.</p>
+          <p data-l="de">Das ist auf jeder Seite normal, die nicht YouTube ist. Das Popup zeigt nur, ob TubePlay auf dem aktuellen Tab greift. Es gibt nichts einzustellen: Öffne eine YouTube-Seite, und der Status wechselt auf aktiv.</p>
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-question">
+          <span class="q">
+            <span data-l="en">Something isn't working – what should I do?</span>
+            <span data-l="de">Etwas funktioniert nicht – was tun?</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p data-l="en">Update TubePlay to the latest version, close Safari completely and open it again. If the problem persists, send us an email with your iPhone or iPad model, the iOS version and a short description of what happens.</p>
+          <p data-l="de">Aktualisiere TubePlay auf die neueste Version, schließe Safari vollständig und öffne es erneut. Bleibt das Problem bestehen, schreib uns eine E-Mail mit deinem iPhone- oder iPad-Modell, der iOS-Version und einer kurzen Beschreibung.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>&copy; 2026 TubePlay &middot; <a href="mailto:sarafski.nikolas@gmail.com">sarafski.nikolas@gmail.com</a></p>
+    </footer>
+
+  </div>
+
+  <script>syncLang();</script>
+
+</body>
+</html>
